@@ -55,24 +55,49 @@
         scene.add( cylinder );
 
         // Create rectangular shape on top of cylinder
-        const length = 5, width = 1;
-        const shape = new THREE.Shape();
-        shape.moveTo( 0,0 );
-        shape.lineTo( 0, width );
-        shape.lineTo( length, width );
-        shape.lineTo( length, 0 );
-        shape.lineTo( 0, 0 );
-        const extrudeGeometry = new THREE.ExtrudeGeometry( shape );
         const extrudeMaterial = new THREE.MeshNormalMaterial();
-        const mesh = new THREE.Mesh( extrudeGeometry, extrudeMaterial );
-        // Position on top of cylinder (cylinder top is at y = 0.3 + 0.25 = 0.55)
-        // Rotate to lay flat on top (rotate 90 degrees around X axis)
-        mesh.rotation.x = -Math.PI/2;
-        mesh.rotation.y = Math.PI/2;
-        // Center the shape and position on top of cylinder
-        // ExtrudeGeometry default depth is 1, so center is at y = 0.55 + 0.5 = 1.05
-        mesh.position.set(-0.5, 5, 0.5);
-        scene.add( mesh );
+        
+        // First rectangular shape
+        const shape1 = new THREE.Shape();
+        shape1.moveTo( 0,0 );
+        shape1.lineTo( 0, 1 );
+        shape1.lineTo( 4, 1 );
+        shape1.lineTo( 4, 0 );
+        shape1.lineTo( 0, 0 );
+        const extrudeGeometry1 = new THREE.ExtrudeGeometry( shape1 );
+        const mesh1 = new THREE.Mesh( extrudeGeometry1, extrudeMaterial );
+        mesh1.rotation.x = -Math.PI/2;
+        mesh1.rotation.y = Math.PI/2;
+        mesh1.position.set(-0.5, 4, 0.5);
+        scene.add( mesh1 );
+        
+        // Second rectangular shape (stacked on top)
+        const shape2 = new THREE.Shape();
+        shape2.moveTo( 0,0 );
+        shape2.lineTo( 0, 1 );
+        shape2.lineTo( 3, 1 );
+        shape2.lineTo( 3, 0 );
+        shape2.lineTo( 0, 0 );
+        const extrudeGeometry2 = new THREE.ExtrudeGeometry( shape2 );
+        const mesh2 = new THREE.Mesh( extrudeGeometry2, extrudeMaterial );
+        mesh2.rotation.x = -Math.PI/2;
+        mesh2.rotation.y = Math.PI/2;
+        mesh2.position.set(-0.5, 7, 0.5); 
+        scene.add( mesh2 );
+        
+        // Third rectangular shape (stacked on top of second)
+        const shape3 = new THREE.Shape();
+        shape3.moveTo( 0,0 );
+        shape3.lineTo( 0, 1 );
+        shape3.lineTo( 3, 1 );
+        shape3.lineTo( 3, 0 );
+        shape3.lineTo( 0, 0 );
+        const extrudeGeometry3 = new THREE.ExtrudeGeometry( shape3 );
+        const mesh3 = new THREE.Mesh( extrudeGeometry3, extrudeMaterial );
+        mesh3.rotation.x = -Math.PI/2;
+        mesh3.rotation.y = Math.PI/2;
+        mesh3.position.set(-0.5, 10, 0.5); 
+        scene.add( mesh3 );
 
         // Animation loop
         function animate() {
