@@ -41,23 +41,38 @@
         // Add controls
         const controls = new OrbitControls(camera, renderer.domElement);
 
-        // Create cube
-        const geometry = new THREE.BoxGeometry(2, 0.35, 2);
         const material = new THREE.MeshNormalMaterial();
+        const extrudeMaterial = new THREE.MeshNormalMaterial();
+
+        // ----------------------------
+        // Base (cube) - fixa na cena
+        // ----------------------------
+        const geometry = new THREE.BoxGeometry(2, 0.35, 2);
         const cube = new THREE.Mesh(geometry, material);
         scene.add(cube);
 
-        // Create cylinder
-        const cylinderGeometry = new THREE.CylinderGeometry( 1, 1, 0.5, 10 );
-        const cylinderMaterial = new THREE.MeshNormalMaterial();
-        const cylinder = new THREE.Mesh( cylinderGeometry, cylinderMaterial );
-        cylinder.position.set(0, 0.3, 0);
-        scene.add( cylinder );
+        // ----------------------------
+        // Ombro pivot - no topo da base
+        // ----------------------------
+        const ombroPivot = new THREE.Object3D();
+        ombroPivot.position.y = 0.175; // metade da altura do cube (0.35/2)
+        cube.add(ombroPivot);
 
-        // Create rectangular shape on top of cylinder
-        const extrudeMaterial = new THREE.MeshNormalMaterial();
-        
-        // First rectangular shape
+        // Helper para visualizar o pivot do ombro (opcional)
+        // const ombroHelper = new THREE.AxesHelper(0.5);
+        // ombroPivot.add(ombroHelper);
+
+        // ----------------------------
+        // Cylinder - pivot que controla a primeira parte do braço
+        // ----------------------------
+        const cylinderGeometry = new THREE.CylinderGeometry( 1, 1, 0.5, 10 );
+        const cylinder = new THREE.Mesh( cylinderGeometry, material );
+        cylinder.position.y = 0.25; // metade da altura do cylinder (0.5/2)
+        ombroPivot.add( cylinder );
+
+        // ----------------------------
+        // Primeira parte do braço (mesh1) - filha do cylinder
+        // ----------------------------
         const shape1 = new THREE.Shape();
         shape1.moveTo( 0,0 );
         shape1.lineTo( 0, 1 );
@@ -68,10 +83,19 @@
         const mesh1 = new THREE.Mesh( extrudeGeometry1, extrudeMaterial );
         mesh1.rotation.x = -Math.PI/2;
         mesh1.rotation.y = Math.PI/2;
-        mesh1.position.set(-0.5, 4, 0.5);
-        scene.add( mesh1 );
+        mesh1.position.set(-0.5, 4, 0.5); // posição relativa ao cylinder (no topo)
+        cylinder.add( mesh1 );
         
-        // Second rectangular shape (stacked on top)
+        // ----------------------------
+        // Segunda articulação pivot - no fim do mesh1
+        // ----------------------------
+        const pivot2 = new THREE.Object3D();
+        pivot2.position.set(0.5, 0, 0.5); // fim do mesh1 (4 - 0.5)
+        mesh1.add(pivot2);
+        
+        // ----------------------------
+        // Segunda parte do braço (mesh2)
+        // ----------------------------
         const shape2 = new THREE.Shape();
         shape2.moveTo( 0,0 );
         shape2.lineTo( 0, 1 );
@@ -82,10 +106,19 @@
         const mesh2 = new THREE.Mesh( extrudeGeometry2, extrudeMaterial );
         mesh2.rotation.x = -Math.PI/2;
         mesh2.rotation.y = Math.PI/2;
-        mesh2.position.set(-0.5, 7, 0.5); 
-        scene.add( mesh2 );
+        mesh2.position.set(-0.5, 0, 0.5); // posição relativa ao pivot2
+        pivot2.add( mesh2 );
         
-        // Third rectangular shape (stacked on top of second)
+        // ----------------------------
+        // Terceira articulação pivot - no fim do mesh2
+        // ----------------------------
+        const pivot3 = new THREE.Object3D();
+        pivot3.position.set(2.5, 0, 0.5); // fim do mesh2 (3 - 0.5)
+        mesh2.add(pivot3);
+        
+        // ----------------------------
+        // Terceira parte do braço (mesh3) - topo
+        // ----------------------------
         const shape3 = new THREE.Shape();
         shape3.moveTo( 0,0 );
         shape3.lineTo( 0, 1 );
@@ -96,16 +129,53 @@
         const mesh3 = new THREE.Mesh( extrudeGeometry3, extrudeMaterial );
         mesh3.rotation.x = -Math.PI/2;
         mesh3.rotation.y = Math.PI/2;
-        mesh3.position.set(-0.5, 10, 0.5); 
-        scene.add( mesh3 );
+        mesh3.position.set(-0.5, 0, 0.5); // posição relativa ao pivot3
+        pivot3.add( mesh3 );
+
+        // Rotation speed (in radians per key press)
+        const rotationSpeed = 0.1;
+
+        // Keyboard controls for rotations
+        document.addEventListener('keydown', (event) => {
+            switch(event.key.toLowerCase()) {
+                
+                // Ombro pivot - rotaciona todo o braço
+                case 'q':
+                    ombroPivot.rotation.y -= rotationSpeed;
+                    break;
+                case 'w':
+                    ombroPivot.rotation.y += rotationSpeed;
+                    break;
+                
+                // Cylinder - rotaciona mesh1, mesh2 e mesh3
+                case 'e':
+                    cylinder.rotation.x -= rotationSpeed;
+                    break;
+                case 'r':
+                    cylinder.rotation.x += rotationSpeed;
+                    break;
+                
+                // Segunda articulação (pivot2) - rotaciona mesh2 e mesh3
+                case '1':
+                    pivot2.rotation.x -= rotationSpeed;
+                    break;
+                case '2':
+                    pivot2.rotation.x += rotationSpeed;
+                    break;
+                
+                // Terceira articulação (pivot3) - rotaciona apenas mesh3 (topo)
+                case '3':
+                    pivot3.rotation.x -= rotationSpeed;
+                    break;
+                case '4':
+                    pivot3.rotation.x += rotationSpeed;
+                    break;
+            }
+        });
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            
-            // Rotate cube
-            // cube.rotation.x += 0.01;
-            // cube.rotation.y += 0.01;
             
             controls.update();
             renderer.render(scene, camera);
