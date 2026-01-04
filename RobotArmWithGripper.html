@@ -45,6 +45,40 @@
         const extrudeMaterial = new THREE.MeshNormalMaterial();
 
         // ----------------------------
+        // Retângulo grande - debaixo da base
+        // ----------------------------
+        const rectangleGeometry = new THREE.BoxGeometry(20, 0.5, 12);
+        const rectangle = new THREE.Mesh(rectangleGeometry, material);
+        rectangle.position.y = -0.425; // debaixo da base (metade da altura do cube + metade da altura do retângulo)
+        scene.add(rectangle);
+
+        // ----------------------------
+        // Pernas da mesa (4 cilindros nas esquinas)
+        // ----------------------------
+        const legGeometry = new THREE.CylinderGeometry(0.3, 0.3, 8, 16); // altura aumentada para 8 (quádruplo)
+        const legMaterial = new THREE.MeshNormalMaterial();
+        
+        // Perna frente esquerda
+        const leg1 = new THREE.Mesh(legGeometry, legMaterial);
+        leg1.position.set(-9, -4.175, -5.5); // esquina frente esquerda (ajustado para altura 8)
+        scene.add(leg1);
+        
+        // Perna frente direita
+        const leg2 = new THREE.Mesh(legGeometry, legMaterial);
+        leg2.position.set(9, -4.175, -5.5); // esquina frente direita (ajustado para altura 8)
+        scene.add(leg2);
+        
+        // Perna trás esquerda
+        const leg3 = new THREE.Mesh(legGeometry, legMaterial);
+        leg3.position.set(-9, -4.175, 5.5); // esquina trás esquerda (ajustado para altura 8)
+        scene.add(leg3);
+        
+        // Perna trás direita
+        const leg4 = new THREE.Mesh(legGeometry, legMaterial);
+        leg4.position.set(9, -4.175, 5.5); // esquina trás direita (ajustado para altura 8)
+        scene.add(leg4);
+
+        // ----------------------------
         // Base (cube) - fixa na cena
         // ----------------------------
         const geometry = new THREE.BoxGeometry(2, 0.35, 2);
@@ -129,7 +163,7 @@
         const mesh3 = new THREE.Mesh( extrudeGeometry3, extrudeMaterial );
         mesh3.rotation.x = -Math.PI/2;
         mesh3.rotation.y = Math.PI/2;
-        mesh3.position.set(-0.5, 0, 0.5); // posição relativa ao pivot3
+        mesh3.position.set(-0.75, 0.5, 0.5); // posição relativa ao pivot3
         pivot3.add( mesh3 );
 
         // Rotation speed (in radians per key press)
@@ -147,27 +181,12 @@
                     ombroPivot.rotation.y += rotationSpeed;
                     break;
                 
-                // Cylinder - rotaciona mesh1, mesh2 e mesh3
-                case 'e':
-                    cylinder.rotation.x -= rotationSpeed;
-                    break;
-                case 'r':
-                    cylinder.rotation.x += rotationSpeed;
-                    break;
-                
-                // Segunda articulação (pivot2) - rotaciona mesh2 e mesh3
-                case '1':
-                    pivot2.rotation.x -= rotationSpeed;
-                    break;
-                case '2':
-                    pivot2.rotation.x += rotationSpeed;
-                    break;
                 
                 // Terceira articulação (pivot3) - rotaciona apenas mesh3 (topo)
-                case '3':
+                case '1':
                     pivot3.rotation.x -= rotationSpeed;
                     break;
-                case '4':
+                case '2':
                     pivot3.rotation.x += rotationSpeed;
                     break;
             }
