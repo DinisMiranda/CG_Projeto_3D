@@ -1,4 +1,5 @@
-import { createScene, createCamera, createRenderer, createControls, createMaterials } from './scene.js';
+import { createScene, createCamera, createRenderer, createControls, addLighting } from './scene.js';
+import { createMaterials } from './materials.js';
 import { createTable } from './table.js';
 import { createArm } from './arm.js';
 import { createGripper } from './gripper.js';
@@ -10,17 +11,30 @@ import * as THREE from 'three';
 const scene = createScene();
 const camera = createCamera();
 const renderer = createRenderer();
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const controls = createControls(camera, renderer);
-const { material, extrudeMaterial } = createMaterials();
+
+// Adicionar iluminação
+addLighting(scene);
+
+// Criar materiais
+const materials = createMaterials();
 
 // Criar mesa
-createTable(scene, material);
+createTable(scene, materials.tableMaterial, materials.legMaterial);
 
 // Criar braço
-const { ombroPivot, pivot2, pivot3, mesh3 } = createArm(scene, material, extrudeMaterial);
+const { ombroPivot, pivot2, pivot3, mesh3 } = createArm(
+    scene, 
+    materials.baseMaterial, 
+    materials.cylinderMaterial,
+    materials.armExtrudeMaterial,
+    materials.sphereMaterial
+);
 
 // Criar garra
-const gripper = createGripper(mesh3, material);
+const gripper = createGripper(mesh3, materials.gripperMaterial);
 
 // Sistema de animação
 const animationSystem = createAnimationSystem(ombroPivot, pivot2, pivot3, gripper);

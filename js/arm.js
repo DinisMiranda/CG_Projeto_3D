@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 
-export function createArm(scene, material, extrudeMaterial) {
+export function createArm(scene, baseMaterial, cylinderMaterial, extrudeMaterial, sphereMaterial) {
     // Base (cube) - fixa na cena
     const geometry = new THREE.BoxGeometry(4, 0.35, 4);
-    const cube = new THREE.Mesh(geometry, material);
+    const cube = new THREE.Mesh(geometry, baseMaterial);
+    cube.castShadow = true;
+    cube.receiveShadow = true;
     scene.add(cube);
 
     // Ombro pivot - no topo da base
@@ -13,8 +15,9 @@ export function createArm(scene, material, extrudeMaterial) {
 
     // Cylinder - pivot que controla a primeira parte do braço
     const cylinderGeometry = new THREE.CylinderGeometry(1, 1, 0.5, 10);
-    const cylinder = new THREE.Mesh(cylinderGeometry, material);
+    const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
     cylinder.position.y = 0.25;
+    cylinder.castShadow = true;
     ombroPivot.add(cylinder);
 
     // Primeira parte do braço (mesh1)
@@ -29,6 +32,7 @@ export function createArm(scene, material, extrudeMaterial) {
     mesh1.rotation.x = -Math.PI / 2;
     mesh1.rotation.y = Math.PI / 2;
     mesh1.position.set(-0.5, 4, 0.5);
+    mesh1.castShadow = true;
     cylinder.add(mesh1);
     
     // Segunda articulação pivot - no fim do mesh1
@@ -49,14 +53,15 @@ export function createArm(scene, material, extrudeMaterial) {
     mesh2.rotation.x = -Math.PI / 2;
     mesh2.rotation.y = Math.PI / 2;
     mesh2.position.set(-1, 0, 0.5);
+    mesh2.castShadow = true;
     pivot2.add(mesh2);
     
     // Esfera - articulação no fim do mesh2
     const sphereRadius = 0.6;
     const sphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32);
-    const sphereMaterial = new THREE.MeshNormalMaterial();
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     sphere.position.set(1.5 + sphereRadius / 2, 0.5, 0.5);
+    sphere.castShadow = true;
     mesh2.add(sphere);
     
     // Terceira articulação pivot - no centro da esfera
@@ -78,14 +83,15 @@ export function createArm(scene, material, extrudeMaterial) {
     // Posicionar para que o início do mesh3 (x=0 do shape) fique no pivot3
     // O mesh3 tem comprimento 3, então precisa começar em -0.5 para que o início fique no pivot
     mesh3.position.set(-0.5, 0.5, 0.5);
+    mesh3.castShadow = true;
     pivot3.add(mesh3);
     
     // Esfera - articulação no fim do mesh3
     const sphere3Radius = 0.6;
     const sphere3Geometry = new THREE.SphereGeometry(sphere3Radius, 32, 32);
-    const sphere3Material = new THREE.MeshNormalMaterial();
-    const sphere3 = new THREE.Mesh(sphere3Geometry, sphere3Material);
+    const sphere3 = new THREE.Mesh(sphere3Geometry, sphereMaterial);
     sphere3.position.set(2.5 + sphere3Radius / 2, 0.5, 0.5);
+    sphere3.castShadow = true;
     mesh3.add(sphere3);
 
     return {
