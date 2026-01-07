@@ -1,4 +1,6 @@
-export function setupControls(targets, rotationSpeed, gripper, garraConfig) {
+export function setupControls(targets, rotationSpeed, gripper, garraConfig, hitboxes) {
+    let hitboxesVisible = true; // Estado inicial: hitboxes visíveis
+    
     document.addEventListener('keydown', (event) => {
         switch(event.key.toLowerCase()) {
             // Ombro pivot - rotaciona todo o braço
@@ -49,6 +51,18 @@ export function setupControls(targets, rotationSpeed, gripper, garraConfig) {
                     targets.garra4Y = garraConfig.posicaoAbertaY2;
                     garraConfig.aberta = true;
                 }
+                break;
+            
+            // Toggle hitboxes visibility
+            case 'o':
+                hitboxesVisible = !hitboxesVisible;
+                // Alternar visibilidade de todas as hitboxes da garra
+                hitboxes.gripperHitboxes.hitbox1.visible = hitboxesVisible;
+                hitboxes.gripperHitboxes.hitbox2.visible = hitboxesVisible;
+                hitboxes.gripperHitboxes.hitbox3.visible = hitboxesVisible;
+                hitboxes.gripperHitboxes.hitbox4.visible = hitboxesVisible;
+                // Alternar visibilidade da hitbox do bloco
+                hitboxes.blockHitbox.visible = hitboxesVisible;
                 break;
         }
     });

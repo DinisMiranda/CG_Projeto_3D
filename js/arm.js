@@ -37,7 +37,7 @@ export function createArm(scene, baseMaterial, cylinderMaterial, extrudeMaterial
     
     // Segunda articulação pivot - no fim do mesh1
     const pivot2 = new THREE.Object3D();
-    pivot2.position.set(0.5, 0, 0.5);
+    pivot2.position.set(-0.5, 1, 0.5);
     pivot2.rotation.z = -Math.PI / 6;
     mesh1.add(pivot2);
     
@@ -52,21 +52,21 @@ export function createArm(scene, baseMaterial, cylinderMaterial, extrudeMaterial
     const mesh2 = new THREE.Mesh(extrudeGeometry2, extrudeMaterial);
     mesh2.rotation.x = -Math.PI / 2;
     mesh2.rotation.y = Math.PI / 2;
-    mesh2.position.set(-1, 0, 0.5);
+    mesh2.position.set(-0.5, 0, 0.5);
     mesh2.castShadow = true;
     pivot2.add(mesh2);
     
-    // Esfera - articulação no fim do mesh2
-    const sphereRadius = 0.6;
-    const sphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32);
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(1.5 + sphereRadius / 2, 0.5, 0.5);
-    sphere.castShadow = true;
-    mesh2.add(sphere);
+    // // Esfera - articulação no fim do mesh2
+    // const sphereRadius = 0.6;
+    // const sphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32);
+    // const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    // sphere.position.set(1.5 + sphereRadius / 2, 0.5, 0.5);
+    // sphere.castShadow = true;
+    // mesh2.add(sphere);
     
     // Terceira articulação pivot - no centro da esfera
     const pivot3 = new THREE.Object3D();
-    pivot3.position.set(1.5 + sphereRadius / 2, 0.5, 0.5); // centro da esfera
+    pivot3.position.set(1.5 + 0.6 / 2, 0.5, 0.5); // centro da esfera
     mesh2.add(pivot3);
     
     // Terceira parte do braço (mesh3)
