@@ -37,7 +37,7 @@ export function createArm(scene, baseMaterial, cylinderMaterial, extrudeMaterial
     
     // Segunda articulação pivot - no fim do mesh1
     const pivot2 = new THREE.Object3D();
-    pivot2.position.set(-0.5, 1, 0.5);
+    pivot2.position.set(0, 0.5, 0.5);
     pivot2.rotation.z = -Math.PI / 6;
     mesh1.add(pivot2);
     
