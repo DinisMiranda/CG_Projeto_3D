@@ -45,8 +45,8 @@ export function createArm(scene, baseMaterial, cylinderMaterial, extrudeMaterial
     const shape2 = new THREE.Shape();
     shape2.moveTo(0, 0);
     shape2.lineTo(0, 1);
-    shape2.lineTo(2, 1);
-    shape2.lineTo(2, 0);
+    shape2.lineTo(4, 1);
+    shape2.lineTo(4, 0);
     shape2.lineTo(0, 0);
     const extrudeGeometry2 = new THREE.ExtrudeGeometry(shape2);
     const mesh2 = new THREE.Mesh(extrudeGeometry2, extrudeMaterial);
@@ -66,7 +66,7 @@ export function createArm(scene, baseMaterial, cylinderMaterial, extrudeMaterial
     
     // Terceira articulação pivot - no centro da esfera
     const pivot3 = new THREE.Object3D();
-    pivot3.position.set(1.5 + 0.6 / 2, 0.5, 0.5); // centro da esfera
+    pivot3.position.set(3.5 + 0.6 / 2, 0.5, 0.5); // centro da esfera (ajustado para mesh2 com comprimento 4)
     pivot3.rotation.z = -Math.PI / 2;
     mesh2.add(pivot3);
     

@@ -104,18 +104,12 @@ export function handleGripperBlockCollision(gripperHitboxes, blockHitbox, block,
                 .subVectors(blockWorldPos, gripperWorldPos)
                 .normalize();
             
-            // Aplicar força ao bloco (empurrar)
-            block.position.x += direction.x * pushStrength;
-            block.position.y += direction.y * pushStrength;
-            block.position.z += direction.z * pushStrength;
-            
-            // Restrição: bloco não pode descer para dentro da mesa
-            // Topo da mesa está em y = -0.425 + 0.25 = -0.175
-            // Bloco tem altura 1, então centro mínimo é y = -0.175 + 0.5 = 0.325
-            const minY = 0.325; // Altura mínima (centro do bloco sobre a mesa)
-            if (block.position.y < minY) {
-                block.position.y = minY;
-            }
+            // Adicionar velocidade ao bloco quando empurrado
+            addBlockVelocity({
+                x: direction.x * pushStrength * 10, // Multiplicar para dar mais impulso
+                y: direction.y * pushStrength * 10,
+                z: direction.z * pushStrength * 10
+            });
             
             // Atualizar a hitbox do bloco (já que é filha do bloco, move automaticamente)
             // Mas podemos retornar true para indicar que houve colisão
@@ -124,5 +118,65 @@ export function handleGripperBlockCollision(gripperHitboxes, blockHitbox, block,
     }
     
     return false; // Sem colisão
+}
+
+// Sistema de física para o bloco
+let blockVelocity = { x: 0, y: 0, z: 0 };
+const gravity = -0.01; // Força da gravidade (negativa = para baixo)
+const groundLevel = -7.8; // Nível do chão (centro do bloco quando está no nível das pernas)
+const tableTopLevel = 0.325; // Nível do topo da mesa (centro do bloco quando está sobre a mesa)
+const friction = 0.95; // Atrito para reduzir velocidade horizontal
+
+export function applyBlockPhysics(block, deltaTime = 0.016) {
+    // Verificar se o bloco está sobre a mesa (com margem de erro pequena)
+    const isOnTable = Math.abs(block.position.y - tableTopLevel) < 0.15;
+    
+    // Aplicar gravidade apenas se o bloco não estiver sobre a mesa
+    if (!isOnTable) {
+        // Aplicar gravidade (aceleração para baixo)
+        blockVelocity.y += gravity;
+        
+        // Atualizar posição vertical
+        block.position.y += blockVelocity.y;
+        
+        // Verificar se o bloco chegou ao chão
+        if (block.position.y <= groundLevel) {
+            block.position.y = groundLevel;
+            blockVelocity.y = 0; // Parar a queda
+        }
+    } else {
+        // Se estiver sobre a mesa, manter na altura da mesa e parar velocidade vertical
+        block.position.y = tableTopLevel;
+        blockVelocity.y = 0; // Parar qualquer movimento vertical quando sobre a mesa
+    }
+    
+    // Aplicar atrito à velocidade horizontal (reduzir movimento horizontal gradualmente)
+    blockVelocity.x *= friction;
+    blockVelocity.z *= friction;
+    
+    // Aplicar velocidade horizontal
+    block.position.x += blockVelocity.x;
+    block.position.z += blockVelocity.z;
+    
+    // Se a velocidade horizontal for muito pequena, zerar
+    if (Math.abs(blockVelocity.x) < 0.001) blockVelocity.x = 0;
+    if (Math.abs(blockVelocity.z) < 0.001) blockVelocity.z = 0;
+}
+
+export function addBlockVelocity(velocity) {
+    // Adicionar velocidade ao bloco (útil para quando é empurrado)
+    blockVelocity.x += velocity.x || 0;
+    blockVelocity.y += velocity.y || 0;
+    blockVelocity.z += velocity.z || 0;
+}
+
+export function resetBlockPosition(block, initialPosition = { x: 2, y: 0.325, z: 4 }) {
+    // Resetar posição do bloco para a posição inicial
+    block.position.set(initialPosition.x, initialPosition.y, initialPosition.z);
+    
+    // Resetar velocidade do bloco
+    blockVelocity.x = 0;
+    blockVelocity.y = 0;
+    blockVelocity.z = 0;
 }
 

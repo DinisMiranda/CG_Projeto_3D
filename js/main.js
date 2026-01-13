@@ -5,7 +5,7 @@ import { createArm } from './arm.js';
 import { createGripper } from './gripper.js';
 import { createAnimationSystem } from './animation.js';
 import { setupControls } from './controls.js';
-import { createGripperHitboxes, createBlockHitbox, handleGripperBlockCollision } from './collision.js';
+import { createGripperHitboxes, createBlockHitbox, handleGripperBlockCollision, applyBlockPhysics } from './collision.js';
 import * as THREE from 'three';
 
 // Inicialização
@@ -45,12 +45,15 @@ const blockHitbox = createBlockHitbox(block);
 const animationSystem = createAnimationSystem(ombroPivot, pivot2, pivot3, gripper);
 
 // Controles
+const blockInitialPosition = { x: 1, y: 0.325, z: 3 }; // Posição inicial do bloco
 setupControls(
     animationSystem.targets, 
     animationSystem.rotationSpeed, 
     gripper, 
     gripper.garraConfig,
-    { gripperHitboxes, blockHitbox }
+    { gripperHitboxes, blockHitbox },
+    block,
+    blockInitialPosition
 );
 
 // Animation loop
@@ -62,13 +65,8 @@ function animate() {
     // Verificar colisões e empurrar bloco se necessário
     handleGripperBlockCollision(gripperHitboxes, blockHitbox, block);
     
-    // Garantir que o bloco nunca desça para dentro da mesa
-    // Topo da mesa está em y = -0.425 + 0.25 = -0.175
-    // Bloco tem altura 1, então centro mínimo é y = -0.175 + 0.5 = 0.325
-    const minBlockY = 0.325;
-    if (block.position.y < minBlockY) {
-        block.position.y = minBlockY;
-    }
+    // Aplicar física ao bloco (gravidade e movimento)
+    applyBlockPhysics(block);
     
     controls.update();
     renderer.render(scene, camera);

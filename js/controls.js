@@ -1,4 +1,6 @@
-export function setupControls(targets, rotationSpeed, gripper, garraConfig, hitboxes) {
+import { resetBlockPosition } from './collision.js';
+
+export function setupControls(targets, rotationSpeed, gripper, garraConfig, hitboxes, block, blockInitialPosition) {
     let hitboxesVisible = true; // Estado inicial: hitboxes visíveis
     
     document.addEventListener('keydown', (event) => {
@@ -63,6 +65,13 @@ export function setupControls(targets, rotationSpeed, gripper, garraConfig, hitb
                 hitboxes.gripperHitboxes.hitbox4.visible = hitboxesVisible;
                 // Alternar visibilidade da hitbox do bloco
                 hitboxes.blockHitbox.visible = hitboxesVisible;
+                break;
+            
+            // Reset block position
+            case 't':
+                if (block && blockInitialPosition) {
+                    resetBlockPosition(block, blockInitialPosition);
+                }
                 break;
         }
     });
