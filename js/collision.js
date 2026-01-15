@@ -64,7 +64,7 @@ export function createBlockHitbox(block) {
     // Hitbox para o bloco vermelho
     const hitbox = createHitbox(
         block,
-        { x: 1, y: 1, z: 1 },
+        { x: 0.5, y: 0.5, z: 0.5 },
         { x: 0, y: 0, z: 0 }
     );
     
@@ -80,7 +80,63 @@ export function checkCollision(hitboxA, hitboxB) {
     return boxA.intersectsBox(boxB);
 }
 
-export function handleGripperBlockCollision(gripperHitboxes, blockHitbox, block, pushStrength = 0.05) {
+// Estado global para rastrear se o bloco está agarrado
+let blockGrabbed = false;
+let grabOffset = new THREE.Vector3(); // Offset do bloco em relação à garra
+let gripperClosing = false; // Flag para indicar que a garra está fechando
+
+export function isBlockGrabbed() {
+    return blockGrabbed;
+}
+
+export function setBlockGrabbed(grabbed, offset = null) {
+    blockGrabbed = grabbed;
+    if (offset) {
+        grabOffset.copy(offset);
+    }
+    if (!grabbed) {
+        gripperClosing = false; // Reset flag quando soltar
+    }
+}
+
+export function setGripperClosing(closing) {
+    gripperClosing = closing;
+}
+
+export function isGripperClosing() {
+    return gripperClosing;
+}
+
+export function handleGripperBlockCollision(gripperHitboxes, blockHitbox, block, gripperCenter, pushStrength = 0.005, garraConfig = null) {
+    // Se o bloco já está agarrado, não aplicar colisão
+    if (blockGrabbed) {
+        return false;
+    }
+    
+    // Se a garra está fechando, tentar agarrar o bloco
+    if (gripperClosing && gripperCenter) {
+        const grabCheck = checkBlockInGripperRange(gripperHitboxes, blockHitbox, gripperCenter);
+        if (grabCheck.canGrab) {
+            setBlockGrabbed(true, grabCheck.offset);
+            gripperClosing = false; // Reset flag após agarrar
+            return false; // Não aplicar colisão se agarrou
+        }
+        
+        // Verificar se a garra já fechou completamente - se sim, resetar a flag
+        if (garraConfig && !garraConfig.aberta) {
+            // Verificar se os dedos estão próximos da posição fechada
+            const finger1Y = gripperHitboxes.hitbox3.position.y;
+            const finger2Y = gripperHitboxes.hitbox4.position.y;
+            const targetY1 = garraConfig.posicaoFechadaY1;
+            const targetY2 = garraConfig.posicaoFechadaY2;
+            
+            // Se os dedos estão próximos da posição fechada (dentro de 0.1), resetar flag
+            if (Math.abs(finger1Y - targetY1) < 0.1 && Math.abs(finger2Y - targetY2) < 0.1) {
+                gripperClosing = false;
+            }
+        }
+    }
+    
     // Verificar colisão entre cada hitbox da garra e a hitbox do bloco
     const gripperHitboxArray = [
         gripperHitboxes.hitbox1,
@@ -104,11 +160,11 @@ export function handleGripperBlockCollision(gripperHitboxes, blockHitbox, block,
                 .subVectors(blockWorldPos, gripperWorldPos)
                 .normalize();
             
-            // Adicionar velocidade ao bloco quando empurrado
+            // Adicionar velocidade ao bloco quando empurrado (força muito menor)
             addBlockVelocity({
-                x: direction.x * pushStrength * 10, // Multiplicar para dar mais impulso
-                y: direction.y * pushStrength * 10,
-                z: direction.z * pushStrength * 10
+                x: direction.x * pushStrength,
+                y: direction.y * pushStrength,
+                z: direction.z * pushStrength
             });
             
             // Atualizar a hitbox do bloco (já que é filha do bloco, move automaticamente)
@@ -127,7 +183,25 @@ const groundLevel = -7.8; // Nível do chão (centro do bloco quando está no n�
 const tableTopLevel = 0.325; // Nível do topo da mesa (centro do bloco quando está sobre a mesa)
 const friction = 0.95; // Atrito para reduzir velocidade horizontal
 
-export function applyBlockPhysics(block, deltaTime = 0.016) {
+export function applyBlockPhysics(block, deltaTime = 0.016, gripperCenter = null) {
+    // Se o bloco está agarrado, seguir a garra
+    if (blockGrabbed && gripperCenter) {
+        // Calcular posição do bloco baseada na posição da garra + offset
+        const targetPosition = new THREE.Vector3();
+        targetPosition.addVectors(gripperCenter, grabOffset);
+        
+        // Atualizar diretamente a posição do bloco para seguir a garra instantaneamente
+        // Isso garante que o bloco acompanhe perfeitamente a garra
+        block.position.copy(targetPosition);
+        
+        // Zerar velocidade quando agarrado
+        blockVelocity.x = 0;
+        blockVelocity.y = 0;
+        blockVelocity.z = 0;
+        
+        return;
+    }
+    
     // Verificar se o bloco está sobre a mesa (com margem de erro pequena)
     const isOnTable = Math.abs(block.position.y - tableTopLevel) < 0.15;
     
@@ -178,5 +252,50 @@ export function resetBlockPosition(block, initialPosition = { x: 2, y: 0.325, z:
     blockVelocity.x = 0;
     blockVelocity.y = 0;
     blockVelocity.z = 0;
+    
+    // Liberar o bloco se estiver agarrado
+    blockGrabbed = false;
+}
+
+// Verificar se o bloco está entre os dedos da garra (pronto para ser agarrado)
+export function checkBlockInGripperRange(gripperHitboxes, blockHitbox, gripperCenter) {
+    // Obter posições dos dedos e do bloco em coordenadas do mundo
+    const finger1Pos = new THREE.Vector3();
+    const finger2Pos = new THREE.Vector3();
+    const blockPos = new THREE.Vector3();
+    
+    gripperHitboxes.hitbox3.getWorldPosition(finger1Pos);
+    gripperHitboxes.hitbox4.getWorldPosition(finger2Pos);
+    blockHitbox.getWorldPosition(blockPos);
+    
+    // Calcular distância do bloco ao centro da garra
+    const distanceToGripper = blockPos.distanceTo(gripperCenter);
+    
+    // Calcular se o bloco está entre os dedos na direção Y (vertical)
+    const minY = Math.min(finger1Pos.y, finger2Pos.y);
+    const maxY = Math.max(finger1Pos.y, finger2Pos.y);
+    const isBetweenFingersY = blockPos.y >= minY - 0.6 && blockPos.y <= maxY + 0.6;
+    
+    // Calcular distâncias do bloco aos dedos
+    const distanceToFinger1 = blockPos.distanceTo(finger1Pos);
+    const distanceToFinger2 = blockPos.distanceTo(finger2Pos);
+    
+    // Distância máxima para agarrar (aumentada para ser mais permissiva)
+    const maxGrabDistance = 0.8;
+    const maxGrabDistanceToGripper = 1.0; // Distância máxima do centro da garra
+    
+    // Verificar se o bloco está próximo o suficiente do centro da garra
+    // e entre os dedos na direção Y
+    // Aceitar se estiver próximo do centro OU próximo de pelo menos um dos dedos
+    const isNearGripper = distanceToGripper < maxGrabDistanceToGripper;
+    const isNearFingers = distanceToFinger1 < maxGrabDistance || distanceToFinger2 < maxGrabDistance;
+    
+    if ((isNearGripper || isNearFingers) && isBetweenFingersY) {
+        // Calcular offset do bloco em relação ao centro da garra
+        const offset = new THREE.Vector3().subVectors(blockPos, gripperCenter);
+        return { canGrab: true, offset };
+    }
+    
+    return { canGrab: false, offset: null };
 }
 

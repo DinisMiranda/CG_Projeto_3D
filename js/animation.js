@@ -11,7 +11,9 @@ export function createAnimationSystem(ombroPivot, pivot2, pivot3, gripper) {
         garra1Y: gripper.garraConfig.baseAbertaY1,
         garra2Y: gripper.garraConfig.baseAbertaY2,
         garra3Y: gripper.garraConfig.posicaoAbertaY1,
-        garra4Y: gripper.garraConfig.posicaoAbertaY2
+        garra4Y: gripper.garraConfig.posicaoAbertaY2,
+        garra3RotZ: gripper.garraConfig.rotacaoAbertaZ1,
+        garra4RotZ: gripper.garraConfig.rotacaoAbertaZ2
     };
     
     // Inicializar valores atuais com os targets (posição inicial)
@@ -23,6 +25,8 @@ export function createAnimationSystem(ombroPivot, pivot2, pivot3, gripper) {
     gripper.rectangleGarra2.position.y = targets.garra2Y;
     gripper.rectangleGarra3.position.y = targets.garra3Y;
     gripper.rectangleGarra4.position.y = targets.garra4Y;
+    gripper.rectangleGarra3.rotation.z = targets.garra3RotZ;
+    gripper.rectangleGarra4.rotation.z = targets.garra4RotZ;
     
     // Animação de inicialização (liga o braço)
     let initAnimationComplete = false;
@@ -79,6 +83,9 @@ export function createAnimationSystem(ombroPivot, pivot2, pivot3, gripper) {
         gripper.rectangleGarra2.position.y += (targets.garra2Y - gripper.rectangleGarra2.position.y) * animationSpeed;
         gripper.rectangleGarra3.position.y += (targets.garra3Y - gripper.rectangleGarra3.position.y) * animationSpeed;
         gripper.rectangleGarra4.position.y += (targets.garra4Y - gripper.rectangleGarra4.position.y) * animationSpeed;
+        // Interpolação suave para rotações dos dedos
+        gripper.rectangleGarra3.rotation.z += (targets.garra3RotZ - gripper.rectangleGarra3.rotation.z) * animationSpeed;
+        gripper.rectangleGarra4.rotation.z += (targets.garra4RotZ - gripper.rectangleGarra4.rotation.z) * animationSpeed;
     }
 
     return {

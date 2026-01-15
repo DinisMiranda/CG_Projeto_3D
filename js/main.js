@@ -53,7 +53,8 @@ setupControls(
     gripper.garraConfig,
     { gripperHitboxes, blockHitbox },
     block,
-    blockInitialPosition
+    blockInitialPosition,
+    mesh3
 );
 
 // Animation loop
@@ -62,11 +63,18 @@ function animate() {
     
     animationSystem.updateAnimation();
     
-    // Verificar colisões e empurrar bloco se necessário
-    handleGripperBlockCollision(gripperHitboxes, blockHitbox, block);
+    // Calcular posição do centro da garra usando transformação do mesh3
+    // O centro da garra está em (3.5, 0.5, 0.5) em coordenadas locais do mesh3
+    const gripperCenterLocal = new THREE.Vector3(3.5, 0.5, 0.5);
+    const gripperCenter = new THREE.Vector3();
+    gripperCenter.copy(gripperCenterLocal);
+    gripperCenter.applyMatrix4(mesh3.matrixWorld); // Transformar para coordenadas do mundo
+    
+    // Verificar colisões e empurrar bloco se necessário (também verifica agarrar)
+    handleGripperBlockCollision(gripperHitboxes, blockHitbox, block, gripperCenter, 0.005, gripper.garraConfig);
     
     // Aplicar física ao bloco (gravidade e movimento)
-    applyBlockPhysics(block);
+    applyBlockPhysics(block, 0.016, gripperCenter);
     
     controls.update();
     renderer.render(scene, camera);

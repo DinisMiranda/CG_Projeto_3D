@@ -1,6 +1,7 @@
-import { resetBlockPosition } from './collision.js';
+import { resetBlockPosition, setBlockGrabbed, isBlockGrabbed, setGripperClosing } from './collision.js';
+import * as THREE from 'three';
 
-export function setupControls(targets, rotationSpeed, gripper, garraConfig, hitboxes, block, blockInitialPosition) {
+export function setupControls(targets, rotationSpeed, gripper, garraConfig, hitboxes, block, blockInitialPosition, mesh3) {
     let hitboxesVisible = true; // Estado inicial: hitboxes visíveis
     
     document.addEventListener('keydown', (event) => {
@@ -44,14 +45,26 @@ export function setupControls(targets, rotationSpeed, gripper, garraConfig, hitb
                     targets.garra2Y = garraConfig.baseFechadaY2;
                     targets.garra3Y = garraConfig.posicaoFechadaY1;
                     targets.garra4Y = garraConfig.posicaoFechadaY2;
+                    targets.garra3RotZ = garraConfig.rotacaoFechadaZ1;
+                    targets.garra4RotZ = garraConfig.rotacaoFechadaZ2;
                     garraConfig.aberta = false;
+                    
+                    // Ativar flag para verificar agarrar no loop de animação
+                    setGripperClosing(true);
                 } else {
                     // Abrir garra
                     targets.garra1Y = garraConfig.baseAbertaY1;
                     targets.garra2Y = garraConfig.baseAbertaY2;
                     targets.garra3Y = garraConfig.posicaoAbertaY1;
                     targets.garra4Y = garraConfig.posicaoAbertaY2;
+                    targets.garra3RotZ = garraConfig.rotacaoAbertaZ1;
+                    targets.garra4RotZ = garraConfig.rotacaoAbertaZ2;
                     garraConfig.aberta = true;
+                    
+                    // Liberar o bloco se estiver agarrado
+                    if (isBlockGrabbed()) {
+                        setBlockGrabbed(false);
+                    }
                 }
                 break;
             

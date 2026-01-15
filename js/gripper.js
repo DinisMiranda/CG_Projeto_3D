@@ -15,23 +15,29 @@ export function createGripper(mesh3, gripperMaterial) {
 
     const rectangleGarraGeometry3 = new THREE.BoxGeometry(0.1, 0.25, 0.1);
     const rectangleGarra3 = new THREE.Mesh(rectangleGarraGeometry3, gripperMaterial);
-    rectangleGarra3.position.set(3.9, 0.1, 0.5);
+    rectangleGarra3.position.set(3.9, 0.05, 0.5);
+    rectangleGarra3.rotation.z = -0.3; // Inclinar o dedo para fora
     rectangleGarra3.castShadow = true;
     mesh3.add(rectangleGarra3);
 
     const rectangleGarraGeometry4 = new THREE.BoxGeometry(0.1, 0.25, 0.1);
     const rectangleGarra4 = new THREE.Mesh(rectangleGarraGeometry4, gripperMaterial);
-    rectangleGarra4.position.set(3.9, 0.9, 0.5);
+    rectangleGarra4.position.set(3.9, 0.95, 0.5);
+    rectangleGarra4.rotation.z = 0.3; // Inclinar o dedo para fora
     rectangleGarra4.castShadow = true;
     mesh3.add(rectangleGarra4);
 
     // Estado e configurações da garra
     const garraConfig = {
         aberta: true,
-        posicaoAbertaY1: 0.1,
-        posicaoAbertaY2: 0.9,
+        posicaoAbertaY1: 0.05, // Mais baixo quando aberto
+        posicaoAbertaY2: 0.95, // Mais alto quando aberto
         posicaoFechadaY1: 0.4,
         posicaoFechadaY2: 0.6,
+        rotacaoAbertaZ1: -0.3, // Inclinação quando aberto
+        rotacaoAbertaZ2: 0.3,
+        rotacaoFechadaZ1: 0, // Sem inclinação quando fechado
+        rotacaoFechadaZ2: 0,
         baseAbertaY1: 0,
         baseAbertaY2: 1,
         baseFechadaY1: 0.35,

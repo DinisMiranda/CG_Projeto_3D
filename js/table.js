@@ -32,10 +32,10 @@ export function createTable(scene, tableMaterial, legMaterial, blockMaterial) {
     scene.add(leg4);
     
     // Bloco vermelho em cima da mesa
-    const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const blockGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
     const block = new THREE.Mesh(blockGeometry, blockMaterial);
     // Topo da mesa está em y = -0.425 + 0.25 = -0.175, então o bloco fica em -0.175 + 0.5 = 0.325
-    block.position.set(1, 0.325, 3);
+    block.position.set(0.5, 0.325, 4);
     block.castShadow = true;
     block.receiveShadow = true;
     scene.add(block);
